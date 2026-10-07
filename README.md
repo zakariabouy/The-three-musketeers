@@ -181,7 +181,8 @@ Aramis pins exact versions in **ADR-001** during week 1.
 
 ### 3.4 Working agreements
 
-- **Branches:** `main` is protected. Work on `<area>/<what>`, e.g. `ingestion/api-retries`, `processing/dlq`, `infra/kraft`.
+> Les conventions de nommage (branches, commits, Python, dossiers) sont détaillées dans [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Branches**: `main` is protected. Work on `<type>/<description>` (`feature/`, `fix/`, `test/`, `refactor/`, `docs/`), see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Pull requests:** small (aim for < 300 lines). The description says *what / why / how I tested it*. At least one approval. Reviews are for learning too: "why did you do it this way?" is a perfectly good review comment.
 - **Reviewers:** the default reviewer is the *coach* for that topic. Once a week, also review one PR from the area you know least.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
