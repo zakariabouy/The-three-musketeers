@@ -7,6 +7,7 @@ We are rebuilding [`e2e-data-engineering`](e2e-data-engineering/) (the original 
 The original is ~230 lines of Python, and it has real bugs (as written, it sends **zero** messages; see the [appendix](#bug-hunt)). That's good news: rebuilding it properly *is* the curriculum.
 
 **Contents**
+
 1. [Who does what](#split)
 2. [Timeline](#timeline)
 3. [Shared foundations](#foundations): repo layout, contracts, versions, working agreements
@@ -14,13 +15,14 @@ The original is ~230 lines of Python, and it has real bugs (as written, it sends
 5. [Athos — the Data Scientist](#athos)
 6. [Porthos — the Software Engineer](#porthos)
 7. [Aramis — the Data Engineer](#aramis)
-8. [Week 6: rotation & final demo](#week6)
+8. [Week 6: rotation &amp; final demo](#week6)
 9. [Reading list](#reading)
 10. [Appendix: bug hunt answers](#bug-hunt)
 
 ---
 
 <a id="split"></a>
+
 ## 1. Who does what
 
 Codenames used in this document. Write your real names next to them:
@@ -45,13 +47,13 @@ Codenames used in this document. Write your real names next to them:
  └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-| | **Athos** (Data Scientist) | **Porthos** (Software Engineer) | **Aramis** (Data Engineer) |
-|---|---|---|---|
-| **Wants to learn** | Data eng + software | Data eng | Data eng (deeper) + software |
-| **Owns** | *Ingestion & orchestration*: API → Kafka producer, Airflow DAGs, the data contract, data-quality checks | *Stream processing & storage*: Kafka → Spark → Cassandra, the Cassandra data model | *Platform*: Docker Compose, Kafka cluster, Airflow deployment, CI/CD, end-to-end tests, observability |
-| **Entry point (comfort zone)** | Python, exploring data | Code structure, testing | Knows what each tool is for |
-| **Stretch zone (the real learning)** | Production Python: packages, tests, retries, logging. Orchestration, Kafka producers | Distributed processing, streaming semantics, NoSQL data modeling | Kafka internals, containers, CI/CD, test automation, engineering rigor |
-| **Coaches the others on** | Data profiling, data quality, "what is this data for?" | Testing, code structure, code review, git | Kafka / Spark / Airflow mental models, debugging the stack |
+|                                            | **Athos** (Data Scientist)                                                                           | **Porthos** (Software Engineer)                                                  | **Aramis** (Data Engineer)                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Wants to learn**                   | Data eng + software                                                                                        | Data eng                                                                               | Data eng (deeper) + software                                                                            |
+| **Owns**                             | *Ingestion & orchestration*: API → Kafka producer, Airflow DAGs, the data contract, data-quality checks | *Stream processing & storage*: Kafka → Spark → Cassandra, the Cassandra data model | *Platform*: Docker Compose, Kafka cluster, Airflow deployment, CI/CD, end-to-end tests, observability |
+| **Entry point (comfort zone)**       | Python, exploring data                                                                                     | Code structure, testing                                                                | Knows what each tool is for                                                                             |
+| **Stretch zone (the real learning)** | Production Python: packages, tests, retries, logging. Orchestration, Kafka producers                       | Distributed processing, streaming semantics, NoSQL data modeling                       | Kafka internals, containers, CI/CD, test automation, engineering rigor                                  |
+| **Coaches the others on**            | Data profiling, data quality, "what is this data for?"                                                     | Testing, code structure, code review, git                                              | Kafka / Spark / Airflow mental models, debugging the stack                                              |
 
 ### Why this split
 
@@ -64,24 +66,26 @@ Codenames used in this document. Write your real names next to them:
 ---
 
 <a id="timeline"></a>
+
 ## 2. Timeline
 
 Assumes ~6–8 hours per person per week. Less time? Stretch it to 8–10 weeks. Skip stretch goals, never skip tests.
 
-| Week | Phase | Athos (DS) | Porthos (SWE) | Aramis (DE) |
-|---|---|---|---|---|
-| 1 | **Understand** | *All together:* set up, make the original run, bug hunt, agree on contracts ([§4](#week1)) | ← | ← |
-| 2 | **Build** | Profile the API, write the contract, `transform.py` + tests | Spark batch basics, read Kafka in batch, Cassandra data model | Repo skeleton + CI, Compose rewrite (Kafka KRaft, Cassandra, Spark) |
-| 3 | **Build** | API client, Kafka producer, Airflow DAG | Streaming job → console → Cassandra, unit tests | Airflow image, init jobs, Kafka lab |
-| 4 | **Integrate** | End-to-end run with Porthos, fix contract gaps | Run the job on the Spark cluster | End-to-end test + CI job |
-| 5 | **Harden** | Logging, dead-letter queue, data-quality DAG | Bad-record routing, crash/restart experiment, metrics | Schema Registry + Avro, monitoring, runbook |
-| 6 | **Rotate & demo** | Swap: Spark windowed aggregation | Swap: DLQ replay DAG | Swap: FastAPI serving layer |
+| Week | Phase                   | Athos (DS)                                                                                   | Porthos (SWE)                                                 | Aramis (DE)                                                         |
+| ---- | ----------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 1    | **Understand**    | *All together:* set up, make the original run, bug hunt, agree on contracts ([§4](#week1)) | ←                                                            | ←                                                                  |
+| 2    | **Build**         | Profile the API, write the contract,`transform.py` + tests                                 | Spark batch basics, read Kafka in batch, Cassandra data model | Repo skeleton + CI, Compose rewrite (Kafka KRaft, Cassandra, Spark) |
+| 3    | **Build**         | API client, Kafka producer, Airflow DAG                                                      | Streaming job → console → Cassandra, unit tests             | Airflow image, init jobs, Kafka lab                                 |
+| 4    | **Integrate**     | End-to-end run with Porthos, fix contract gaps                                               | Run the job on the Spark cluster                              | End-to-end test + CI job                                            |
+| 5    | **Harden**        | Logging, dead-letter queue, data-quality DAG                                                 | Bad-record routing, crash/restart experiment, metrics         | Schema Registry + Avro, monitoring, runbook                         |
+| 6    | **Rotate & demo** | Swap: Spark windowed aggregation                                                             | Swap: DLQ replay DAG                                          | Swap: FastAPI serving layer                                         |
 
 **Milestones:** end of W1, the original runs and the contracts are merged · end of W3, each slice works on its own · end of W4, `make up` → data lands in Cassandra · end of W6, the demo.
 
 ---
 
 <a id="foundations"></a>
+
 ## 3. Shared foundations
 
 ### 3.1 Target repo layout
@@ -119,6 +123,7 @@ three-musketeers/
 ```
 
 <a id="contracts"></a>
+
 ### 3.2 The two contracts (agree on these in week 1)
 
 These are the only things the three workstreams share. Once they're merged, nobody waits for anybody.
@@ -127,36 +132,37 @@ These are the only things the three workstreams share. Once they're merged, nobo
 
 Message key: the user `id`. Message value: JSON (moving to Avro in week 5).
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | string (UUID v4) | Generated by the producer; also the Kafka message key |
-| `first_name`, `last_name` | string | |
-| `gender` | string | |
-| `email`, `username`, `phone` | string | PII |
-| `address` | string | street number + name, city, state, country |
-| `country` | string | *Proposed:* its own field, so it can be queried |
-| `post_code` | string | The API returns a **number** for some countries, so always cast to string |
-| `dob` | string (ISO-8601 timestamp) | |
-| `registered_date` | string (ISO-8601 timestamp) | |
-| `picture` | string (URL) | |
-| `ingested_at` | string (ISO-8601 timestamp) | *Proposed:* when the producer fetched it, so you can measure latency |
-| `schema_version` | int | *Proposed:* starts at `1` |
+| Field                              | Type                        | Notes                                                                          |
+| ---------------------------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| `id`                             | string (UUID v4)            | Generated by the producer; also the Kafka message key                          |
+| `first_name`, `last_name`      | string                      |                                                                                |
+| `gender`                         | string                      |                                                                                |
+| `email`, `username`, `phone` | string                      | PII                                                                            |
+| `address`                        | string                      | street number + name, city, state, country                                     |
+| `country`                        | string                      | *Proposed:* its own field, so it can be queried                              |
+| `post_code`                      | string                      | The API returns a**number** for some countries, so always cast to string |
+| `dob`                            | string (ISO-8601 timestamp) |                                                                                |
+| `registered_date`                | string (ISO-8601 timestamp) |                                                                                |
+| `picture`                        | string (URL)                |                                                                                |
+| `ingested_at`                    | string (ISO-8601 timestamp) | *Proposed:* when the producer fetched it, so you can measure latency         |
+| `schema_version`                 | int                         | *Proposed:* starts at `1`                                                  |
 
 Open questions for your contract meeting:
+
 - Keep `address` as one string, or split it into `city` / `state` / `country`? (Porthos's data model will want `country` as a real column.)
 - Emails, phones and birth dates are PII. They're fake here, but decide now: who may see them, and may they appear in logs?
 - What happens to a record that breaks the contract: dropped, or sent to a `users_dlq` topic?
 
 **Infra contract: where things live** (owner: Aramis)
 
-| Service | From another container | From your laptop | UI / shell |
-|---|---|---|---|
-| Kafka | `kafka:29092` | `localhost:9092` | Kafka UI → http://localhost:8085 |
-| Schema Registry | `http://schema-registry:8081` | `http://localhost:8081` | |
-| Cassandra | `cassandra:9042` | `localhost:9042` | `docker exec -it cassandra cqlsh` |
-| Spark master | `spark://spark-master:7077` | | http://localhost:9090 |
-| Airflow | | | http://localhost:8080 |
-| Postgres (Airflow metadata only) | `postgres:5432` | not exposed | |
+| Service                          | From another container          | From your laptop          | UI / shell                          |
+| -------------------------------- | ------------------------------- | ------------------------- | ----------------------------------- |
+| Kafka                            | `kafka:29092`                 | `localhost:9092`        | Kafka UI → http://localhost:8085   |
+| Schema Registry                  | `http://schema-registry:8081` | `http://localhost:8081` |                                     |
+| Cassandra                        | `cassandra:9042`              | `localhost:9042`        | `docker exec -it cassandra cqlsh` |
+| Spark master                     | `spark://spark-master:7077`   |                           | http://localhost:9090               |
+| Airflow                          |                                 |                           | http://localhost:8080               |
+| Postgres (Airflow metadata only) | `postgres:5432`               | not exposed               |                                     |
 
 Rule: **no hosts or ports hard-coded in code.** Read them from environment variables (`KAFKA_BOOTSTRAP_SERVERS`, `CASSANDRA_HOST`, …) declared in `.env.example`.
 
@@ -164,14 +170,14 @@ Rule: **no hosts or ports hard-coded in code.** Read them from environment varia
 
 Aramis pins exact versions in **ADR-001** during week 1.
 
-| Layer | Original | Rebuild | Why change |
-|---|---|---|---|
-| Orchestration | Airflow 2.6 image, pip-upgraded to 2.7 on every boot | **Airflow 3.x**, custom image built once | Current major version. `schedule_interval` and `airflow db init` no longer exist in 3.x |
-| Broker | Confluent 7.4 + ZooKeeper | **Apache Kafka 4.x in KRaft mode** (`apache/kafka` image) | ZooKeeper was removed in Kafka 4.0. KRaft is how Kafka runs now |
-| Kafka UI | Confluent Control Center | **kafbat/kafka-ui** (or Redpanda Console) | Open source, a fraction of the RAM |
-| Processing | `bitnami/spark:latest` + Scala 2.13 connectors | **Spark 3.5.x** (`apache/spark` image) + Scala 2.12 connectors | Pin versions, and the Scala suffix must match the runtime. Check the Cassandra connector's compatibility table before trying Spark 4; the connector lags behind Spark releases |
-| Storage | `cassandra:latest` | **Cassandra 5.0.x**, pinned | Never use `latest` |
-| Python | 3.9 | 3.11 or 3.12 | Match the Airflow image you pick |
+| Layer         | Original                                             | Rebuild                                                                | Why change                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Orchestration | Airflow 2.6 image, pip-upgraded to 2.7 on every boot | **Airflow 3.x**, custom image built once                         | Current major version.`schedule_interval` and `airflow db init` no longer exist in 3.x                                                                                     |
+| Broker        | Confluent 7.4 + ZooKeeper                            | **Apache Kafka 4.x in KRaft mode** (`apache/kafka` image)      | ZooKeeper was removed in Kafka 4.0. KRaft is how Kafka runs now                                                                                                                |
+| Kafka UI      | Confluent Control Center                             | **kafbat/kafka-ui** (or Redpanda Console)                        | Open source, a fraction of the RAM                                                                                                                                             |
+| Processing    | `bitnami/spark:latest` + Scala 2.13 connectors     | **Spark 3.5.x** (`apache/spark` image) + Scala 2.12 connectors | Pin versions, and the Scala suffix must match the runtime. Check the Cassandra connector's compatibility table before trying Spark 4; the connector lags behind Spark releases |
+| Storage       | `cassandra:latest`                                 | **Cassandra 5.0.x**, pinned                                      | Never use`latest`                                                                                                                                                            |
+| Python        | 3.9                                                  | 3.11 or 3.12                                                           | Match the Airflow image you pick                                                                                                                                               |
 
 ### 3.4 Working agreements
 
@@ -187,6 +193,7 @@ Aramis pins exact versions in **ADR-001** during week 1.
 - **AI assistants:** use them to explain errors and concepts. Write your own slice's code yourself first; the struggle is where the learning happens.
 
 **Definition of done** (every task):
+
 - [ ] Merged through a reviewed PR, CI green
 - [ ] Has tests (unit tests for logic, integration tests where it touches a real service)
 - [ ] Works from a fresh clone with `make up`
@@ -196,6 +203,7 @@ Aramis pins exact versions in **ADR-001** during week 1.
 ---
 
 <a id="week1"></a>
+
 ## 4. Week 1: all together
 
 ### Setup (everyone, before the first session)
@@ -228,6 +236,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 4. Aramis writes ADR-001 (versions).
 
 **Week 1 is done when:**
+
 - [ ] Each of you can draw the architecture from memory and explain the path of one record
 - [ ] The original ran end-to-end at least once (or you documented exactly why it couldn't)
 - [ ] The contract PR and the repo-skeleton PR are merged
@@ -235,27 +244,34 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ---
 
 <a id="athos"></a>
+
 ## 5. Athos — the Data Scientist → owns *Ingestion & Orchestration*
 
 **Why this slice is yours.** You already speak Python and data, so the entry barrier is low. The real goal is the jump from notebook code to code that runs unattended at 3 a.m.: modules instead of cells, tests instead of eyeballing, retries and logs instead of "just re-run it". That jump *is* the move from data science to software and data engineering. You also own the data contract and data quality, where your instincts are an advantage the other two don't have.
 
 **What you'll learn**
+
 - *Software:* Python packaging (src layout, `pyproject.toml`), single-purpose functions, type hints, pytest with fixtures and mocks, logging, configuration through environment variables, a git + PR workflow.
 - *Data engineering:* Airflow (DAGs, tasks, scheduler, retries, `catchup`, idempotency), Kafka producers (topics, keys, partitions, `acks`, batching, `flush`), data contracts and schema evolution, dead-letter queues, data-quality checks.
 
 **Your coaches:** Porthos for software practices, Aramis for Kafka and Airflow.
 
+📘 **Detailed guide:** [docs/guides/athos.md](docs/guides/athos.md) covers prerequisites, concept primers, step-by-step hints and common traps.
+
 ### Plan
 
 **Week 2: from notebook to package**
+
 - [ ] **Profile the source** in `ingestion/notebooks/01_profile_randomuser.ipynb`. Fetch ~500 users from `https://randomuser.me/api/?results=500&seed=musketeers` (the seed makes the data reproducible). Which fields change type between records? Which are nested? Any nulls, duplicates or strange values? This feeds the contract.
-- [ ] **Write the contract** `contracts/user_created.v1.schema.json` (JSON Schema) and get it approved.
+- [ ] **Refine the contract** `contracts/user_created.v1.schema.json` (JSON Schema) with what profiling taught you (the week-1 draft was a first guess) and get the update approved.
 - [ ] **Create the package** `ingestion/src/ingestion/` with its own `pyproject.toml`. The first module is `transform.py`, holding a *pure* function `to_contract(raw: dict) -> dict`: no network, no Kafka, just data in and data out. Use type hints throughout.
 - [ ] **First tests** in `ingestion/tests/test_transform.py`. Save 3–5 real API responses as JSON fixtures. Test the numeric postcode, accented names and a missing field. Validate every output against the contract with the `jsonschema` library.
+- [ ] **Unblock Porthos:** commit `contracts/samples/sample_messages.jsonl` (~50 valid messages) and `bad_messages.jsonl` (~5 broken ones) as soon as `to_contract` works.
 
-✅ *Done when* `pytest` passes locally and in CI.
+✅ *Done when* `pytest` passes locally and in CI, and the sample files are committed.
 
 **Week 3: talk to the outside world**
+
 - [ ] `api_client.py`: a `requests.Session` with a timeout on every call, retries with exponential backoff on 5xx errors and timeouts, and **batches** (`results=N`) instead of one call per user.
 - [ ] Test it with mocked HTTP (`responses` or `unittest.mock`): a timeout, an HTTP 500, invalid JSON. Unit tests never touch the real network.
 - [ ] `producer.py`: a small class wrapping the Kafka producer. It handles JSON serialization, sets `key=id` and `acks="all"`, counts successes and failures, and always calls `flush()` (use a context manager or `try/finally`).
@@ -266,10 +282,12 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* triggering the DAG produces exactly N messages, **and the task turns red if Kafka is down** (no more silent green).
 
 **Week 4: integrate**
+
 - [ ] With Porthos: run producer → Spark → Cassandra and compare counts at every hop (API → topic → table). Where do records go missing?
 - [ ] Fix any contract mismatches. If the contract has to change, do it *compatibly* (add optional fields; never rename or remove) and bump the version.
 
 **Week 5: make it production-shaped**
+
 - [ ] Replace every `print` with `logging`. Log counts per run, and **never log PII** (emails, phones).
 - [ ] Records that fail validation go to the `users_dlq` topic with an `error` field instead of disappearing.
 - [ ] **Data-quality DAG** `dags/data_quality.py`, your data-science superpower. After ingestion, query Cassandra and check rules you define: row count vs. produced count, null rate per column, duplicate emails, birth dates in the future, malformed emails. Any broken rule fails the DAG. You own the rules, and Porthos reviews the code.
@@ -277,11 +295,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* you can show a broken record landing in the DLQ, and a bad row (inserted by hand) making the quality DAG fail.
 
 ### Stretch goals
+
 - Avro + Schema Registry on the producer side (with Aramis, week 5).
 - Benchmark `kafka-python` vs. `confluent-kafka` (messages/sec, with a chart): a data-science experiment on a data-engineering question.
 - A small Streamlit dashboard on Cassandra for the final demo (signups per country, age distribution).
 
 ### Self-check: can you answer these?
+
 1. What do `start_date`, `schedule` and `catchup` each control? What would `catchup=True` with a 2023 start date do?
 2. What makes a task *idempotent*? If your DAG runs twice for the same day, what happens downstream?
 3. Why does the original import `requests` and `kafka` *inside* the functions instead of at the top of the DAG file?
@@ -292,6 +312,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 8. Why was the original task green while it sent zero messages, and how does your version prevent that?
 
 ### Study material
+
 - Airflow docs: [Core Concepts](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/index.html) and [Best Practices](https://airflow.apache.org/docs/apache-airflow/stable/best-practices.html) (idempotency, top-level code)
 - Kafka docs: [Producer configs](https://kafka.apache.org/documentation/#producerconfigs) (`acks`, `linger.ms`, `batch.size`, `enable.idempotence`)
 - [Python Packaging User Guide](https://packaging.python.org/): the *src layout*
@@ -301,11 +322,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ---
 
 <a id="porthos"></a>
+
 ## 6. Porthos — the Software Engineer → owns *Stream Processing & Storage*
 
 **Why this slice is yours.** It's the part least like normal backend work. You're not handling requests: you're running a query over an *unbounded table* that never finishes. Micro-batches, offsets, checkpoints, delivery guarantees and query-first data modeling are all new territory, and this is exactly where data engineering differs from software engineering. Your habits (clean structure, tests) will also make this the best-engineered component.
 
 **What you'll learn**
+
 - *Data engineering:* Spark architecture (driver, executors, master/worker, lazy evaluation, query plans), Structured Streaming (sources, sinks, triggers, output modes, checkpoints, `foreachBatch`, watermarks), the consumer side of Kafka (offsets, partitions → tasks), Cassandra modeling (partition vs. clustering keys, one table per query, upserts), delivery semantics (at-least-once + idempotent writes).
 - *Software (you teach this one):* making data code testable, with pure transform functions and a local `SparkSession` in pytest.
 
@@ -314,6 +337,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ### Plan
 
 **Week 2: think in DataFrames**
+
 - [ ] Get PySpark running in WSL (`pip install "pyspark==3.5.*"` + Java 17). Never directly on Windows.
 - [ ] **Batch first.** Ask Athos for `sample_messages.jsonl` (contract-valid messages). Read it with `spark.read.json`, select columns, cast `dob` and `registered_date` to timestamps, and `.explain()` the plan. In your learning log, write down the difference between transformations and actions, and why nothing runs until `.show()`.
 - [ ] **Kafka, still in batch:** run `spark.read.format("kafka")` on the topic and look at the raw columns (`key`, `value`, `topic`, `partition`, `offset`, `timestamp`). Kafka is just an ordered log of bytes, and *you* give it a schema.
@@ -322,6 +346,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* you can explain why the original table only supports "get user by id".
 
 **Week 3: go streaming**
+
 - [ ] Package `processing/src/processing/`: `schema.py` (the Spark schema built from the contract), `transform.py` (pure DataFrame → DataFrame functions), `sinks.py`, and `job.py` (wiring + config from env).
 - [ ] Add a test that fails if `schema.py` and the JSON contract drift apart.
 - [ ] Streaming v1 → **console sink**. Experiments to write up: change the trigger interval; compare `startingOffsets` earliest vs. latest; stop and restart *with* and *without* a checkpoint. What gets reprocessed?
@@ -331,11 +356,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* messages typed into `kafka-console-producer` show up in all your Cassandra tables, and the tests pass in CI.
 
 **Week 4: run on the real cluster**
+
 - [ ] With Aramis: write `processing/Dockerfile` and a `spark-submit --master spark://spark-master:7077 --packages …` service in Compose, using in-network hostnames (`kafka:29092`, `cassandra`).
 - [ ] Open the Spark UI (http://localhost:9090) and prove the job's executors run on the worker. (The original never used its own cluster. Work out why.)
 - [ ] End-to-end run with Athos's DAG.
 
 **Week 5: correctness**
+
 - [ ] Bad records (unparseable JSON, missing required fields) → the `users_dlq` topic or a `users_rejected` table, together with the reason. Nothing is silently dropped.
 - [ ] **Crash experiment:** `docker kill` the job mid-stream, restart it and count the rows. Explain the result: Cassandra writes are upserts on the primary key, so replays overwrite instead of duplicating. That's *at-least-once + an idempotent sink*. Write the ADR.
 - [ ] Keep checkpoints on a named Docker volume, not `/tmp`.
@@ -344,11 +371,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* you can kill and restart the job without losing or duplicating a row, and explain why.
 
 ### Stretch goals
+
 - Windowed aggregation with a watermark: signups per country per minute → `signups_by_country_minute`. Careful: counters are *not* idempotent, so what does the crash experiment do now?
 - Also write the raw stream to Parquet partitioned by date (a "bronze" layer). Compare a data lake with a serving database.
 - A one-page comparison: Spark Structured Streaming vs. Flink vs. Kafka Streams.
 
 ### Self-check: can you answer these?
+
 1. Transformations vs. actions: when does Spark actually do work?
 2. In a streaming query, what are a micro-batch, a trigger and an output mode?
 3. What exactly lives in the checkpoint folder? What happens if you delete it and restart with `startingOffsets=earliest`? With `latest`?
@@ -359,6 +388,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 8. Why does the Scala suffix (`_2.12` / `_2.13`) on a Spark package matter?
 
 ### Study material
+
 - [Structured Streaming Programming Guide (Spark 3.5)](https://spark.apache.org/docs/3.5.1/structured-streaming-programming-guide.html)
 - *Learning Spark*, 2nd ed. (Damji et al.): the DataFrame and Structured Streaming chapters
 - [Cassandra docs](https://cassandra.apache.org/doc/latest/): the *Data Modeling* section
@@ -367,11 +397,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ---
 
 <a id="aramis"></a>
+
 ## 7. Aramis — the Data Engineer → owns *Platform, Kafka & Quality Gates*
 
 **Why this slice is yours.** You already know what each tool is *for*. The next level has two parts. First, how the tools really run: Kafka internals, networking, resources. Second, the software discipline that turns a "works on my machine" demo into something anyone can clone and run: pinned versions, built images, CI, automated tests, runbooks. That's what separates a junior data engineer from a senior one. You also unblock the team in week 1, so you move first.
 
 **What you'll learn**
+
 - *Data engineering, deeper:* Kafka internals (partitions, replication, ISR, retention, listeners), KRaft vs. ZooKeeper, Schema Registry and compatibility modes, Airflow architecture (api-server, scheduler, dag-processor, executor, metadata DB), Spark cluster resources.
 - *Software:* Docker (images vs. containers, layers, healthchecks, volumes, networks), Compose profiles, Makefiles, GitHub Actions, pre-commit and linting, test automation, secrets handling, documentation.
 
@@ -380,6 +412,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ### Plan
 
 **Week 1: unblock everyone (do this first)**
+
 - [ ] Repo skeleton ([§3.1](#foundations)) with `.gitattributes` (`*.sh text eol=lf`), `.editorconfig`, `.gitignore` and `.env.example`.
 - [ ] A root `pyproject.toml` with ruff + pytest config, `pre-commit` hooks and a PR template.
 - [ ] A `Makefile` with `make up`, `make down`, `make logs`, `make test`, `make e2e` and `make reset`.
@@ -387,6 +420,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 - [ ] ADR-001: versions and images, all pinned.
 
 **Week 2: Compose, rewritten line by line**
+
 - [ ] Write `docker-compose.yml` from scratch, one service at a time, and understand every line: Kafka in KRaft mode (no ZooKeeper), Cassandra, Spark master + worker. Pin everything, give every service a real healthcheck, use `depends_on: condition: service_healthy`, named volumes and memory limits.
 - [ ] Init jobs: `kafka-init` creates `users_created` (3 partitions) and `users_dlq`; `cassandra-init` applies `init.cql` once Cassandra is healthy.
 - [ ] Compose **profiles**, so 8 GB laptops survive: `core` (Kafka, Cassandra, Spark), `orchestration` (Airflow + Postgres), `tools` (Kafka UI, Schema Registry).
@@ -395,6 +429,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* a fresh clone + `make up` gives an all-healthy `core` stack, and `make reset` wipes everything.
 
 **Week 3: the Airflow platform + a Kafka deep-dive**
+
 - [ ] Custom Airflow image `infra/airflow/Dockerfile`: the official image plus only the deps you need and Athos's `ingestion` package, all installed at **build** time. No pip at startup, no 135-line freeze. Use a Postgres metadata DB and `airflow db migrate`, create the admin user from env vars, and disable example DAGs *the right way*. Airflow 3 runs as several components (api-server, scheduler, dag-processor, triggerer). Run them as separate services and be able to explain what each one does.
 - [ ] Kafka lab. Write each item up in your learning log:
   - listeners: connect from a container and from your laptop, then break the advertised listeners on purpose and read the error;
@@ -404,11 +439,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 - [ ] Add Kafka UI and compare its RAM use to Control Center's with `docker stats`.
 
 **Week 4: prove it works, automatically**
+
 - [ ] `tests/integration/test_e2e.py`: against a running `core` stack, produce N contract-valid messages (reuse Athos's producer), poll Cassandra until N rows appear or a timeout hits, then assert. Run it with `make e2e`.
 - [ ] CI v2: a job that starts the `core` profile in GitHub Actions and runs `make e2e`, on PRs to `main` (or nightly, if it's too slow).
 - [ ] Pair with Porthos on running the Spark job on the cluster.
 
 **Week 5: contracts, visibility, operations**
+
 - [ ] **Schema Registry for real** (with Athos and Porthos): turn the JSON contract into an Avro schema, set compatibility to `BACKWARD`, then demo a breaking change being rejected and a compatible one being accepted. Heads-up: the Confluent wire format adds a 5-byte header that Spark's `from_avro` doesn't expect. Solving that is part of the exercise.
 - [ ] Observability: know where to read consumer lag, messages/sec and Spark batch duration (Kafka UI, Spark UI, Airflow UI). Stretch: Prometheus + Grafana.
 - [ ] Secrets: nothing secret in `docker-compose.yml`, `.env` is git-ignored, and the Airflow secret key is new.
@@ -417,11 +454,13 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ✅ *Done when* a teammate can go from a fresh clone to data in Cassandra using only the README and the runbook.
 
 ### Stretch goals
+
 - 3 Kafka brokers with replication factor 3: kill one and watch leader election and the ISR shrink.
 - Build images and push them to GitHub Container Registry from CI; tag releases with a changelog.
 - Run 2 Cassandra nodes and explore replication factor vs. consistency level.
 
 ### Self-check: can you answer these?
+
 1. Explain advertised listeners to a teammate: why does a container use `kafka:29092` while your laptop uses `localhost:9092`?
 2. What did ZooKeeper do for Kafka, and what replaced it in KRaft mode?
 3. Partitions, replication factor, ISR: what happens when a broker dies with RF=1? With RF=3?
@@ -432,6 +471,7 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 8. `BACKWARD` vs. `FORWARD` compatibility: with each one, who must upgrade first, the producer or the consumer?
 
 ### Study material
+
 - [Kafka docs](https://kafka.apache.org/documentation/): the *Design* and *KRaft* sections
 - *Kafka: The Definitive Guide*, 2nd ed. (Shapira et al.)
 - [Docker Compose docs](https://docs.docker.com/compose/): file reference, healthchecks, profiles
@@ -442,17 +482,18 @@ It will **not** work out of the box. That's the point: debugging an unfamiliar p
 ---
 
 <a id="week6"></a>
+
 ## 8. Week 6: rotation & final demo
 
 ### Swap tasks
 
 Each person does one task in an area they didn't own, so nobody ends the project knowing only a third of it.
 
-| Who | Swap task | Coach |
-|---|---|---|
-| **Athos** (DS) | **Spark:** windowed aggregation "signups per country per minute" with a watermark → a new Cassandra table, with tests | Aramis (Porthos reviews as the owner) |
-| **Porthos** (SWE) | **Airflow + Kafka:** a DLQ replay DAG that reads `users_dlq`, re-validates the records and re-publishes the fixable ones to `users_created` | Athos |
-| **Aramis** (DE) | **Software:** a small FastAPI service over Cassandra (`GET /users/{id}`, `GET /stats/countries`) with tests, a Dockerfile and a Compose service | Porthos |
+| Who                     | Swap task                                                                                                                                                 | Coach                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **Athos** (DS)    | **Spark:** windowed aggregation "signups per country per minute" with a watermark → a new Cassandra table, with tests                              | Aramis (Porthos reviews as the owner) |
+| **Porthos** (SWE) | **Airflow + Kafka:** a DLQ replay DAG that reads `users_dlq`, re-validates the records and re-publishes the fixable ones to `users_created`     | Athos                                 |
+| **Aramis** (DE)   | **Software:** a small FastAPI service over Cassandra (`GET /users/{id}`, `GET /stats/countries`) with tests, a Dockerfile and a Compose service | Porthos                               |
 
 ### Final demo (~1 h; invite friends or colleagues)
 
@@ -465,6 +506,7 @@ Each person does one task in an area they didn't own, so nobody ends the project
 ---
 
 <a id="reading"></a>
+
 ## 9. Reading list (shared)
 
 - ***Designing Data-Intensive Applications*** (Martin Kleppmann): the team book. Read one chapter every 1–2 weeks and discuss it in the weekly sync. Priority: ch. 3, 5, 6, 11.
@@ -475,6 +517,7 @@ Each person does one task in an area they didn't own, so nobody ends the project
 ---
 
 <a id="bug-hunt"></a>
+
 ## 10. Appendix: bug hunt answers
 
 <details>
